@@ -25,7 +25,7 @@ Ensure you have the following installed:
 1. **Clone the frontend repository:**
 
    ```bash
-   git clone <frontend-repo-url>
+   git clone <https://github.com/Tola-byte/nooro-todo-task>
    cd <frontend-repo-folder>
    ```
 
