@@ -4,11 +4,12 @@ import { CreateTaskForm } from '../Form/TaskForm';
 import { ConfirmationModal } from '../ConfirmationModal/Modal';
 import { Task, TaskLists } from '@/types/TaskList';
 import { deleteTask, editTask } from '@/services/taskService';
+import { showErrorToast } from '@/utils/toast';
+import { handleError } from '@/utils/errorHandler';
 
 const TaskList: React.FC<TaskLists> = ({ listOfTasks }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const [tasks, setTasks] = useState<Task[]>(listOfTasks);
-  const [error, setError] = useState('');
   const [taskToEdit, setTaskToEdit] = useState<Task>({
     title: '',
     id: 0,
@@ -17,53 +18,46 @@ const TaskList: React.FC<TaskLists> = ({ listOfTasks }) => {
   const [taskToDelete, setTaskToDelete] = useState<number | null>(null);
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
-  const toggleTaskCompletion = async(id: number) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-        )
-    )
-      
-      
-      try {
-          const taskToUpdate = tasks.find((task) => task.id === id);
-
-          if (!taskToUpdate) return;
-          await editTask({...taskToUpdate, completed: !taskToUpdate.completed });
-      } catch (error) {
-          console.log("Failed to update task completion status:", error);
-
-      }
-      
-    
-  };
-
-  const handleDeleteTask = async (id: number) => {
+  const toggleTaskCompletion = async (id: number) => {
     try {
-      await deleteTask(id);
-      setTaskToDelete(id);
-      setOpenDeleteModal(false);
-      setTasks(tasks.filter((task) => task.id !== id));
+      const taskToUpdate = tasks.find((task) => task.id === id);
+      if (!taskToUpdate) return;
+
+      const updatedTasks = tasks.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      );
+      setTasks(updatedTasks);
+
+      await editTask({ ...taskToUpdate, completed: !taskToUpdate.completed });
     } catch (error) {
-      setError('Failed to delete task. Please try again.');
+      const errorMessage = handleError(error);
+      showErrorToast(errorMessage);
     }
   };
 
-  const handleEditTask = async (updates: {
-    id: number;
-    title: string;
-    color: string;
-    completed?: boolean;
-  }) => {
+  const handleDeleteTask = async () => {
+    if (taskToDelete === null) return;
+
     try {
-      setTaskToEdit(updates);
+      await deleteTask(taskToDelete);
+      setTasks(tasks.filter((task) => task.id !== taskToDelete));
+      setOpenDeleteModal(false);
+    } catch (error) {
+      const errorMessage = handleError(error);
+      showErrorToast(errorMessage);
+    }
+  };
+
+  const handleEditTask = async (updates: Task) => {
+    try {
       const updatedTask = await editTask(updates);
       setTasks(
         tasks.map((task) => (task.id === updates.id ? updatedTask : task))
       );
       setOpenEdit(false);
     } catch (error) {
-      setError('Failed to edit task. Please try again.');
+      const errorMessage = handleError(error);
+      showErrorToast(errorMessage);
     }
   };
 
@@ -114,16 +108,16 @@ const TaskList: React.FC<TaskLists> = ({ listOfTasks }) => {
                   : 'bg-gray-800 text-[#f2f2f2] '
               }`}
             >
-                  <div className="flex items-center gap-2">
-                      <div>
-                <input
-                  type="checkbox"
-                  checked={task.completed}
-                  onChange={() => toggleTaskCompletion(task.id)}
-                  className="w-3 h-3 md:w-5 md:h-5 md:mt-2 appearance-none border-2 border-[#4ea8de] 
+              <div className="flex items-center gap-2">
+                <div>
+                  <input
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={() => toggleTaskCompletion(task.id)}
+                    className="w-3 h-3 md:w-5 md:h-5 md:mt-2 appearance-none border-2 border-[#4ea8de] 
                                 rounded-full checked:bg-[#5E60CE] checked:border-none"
-                />
-                          </div>
+                  />
+                </div>
 
                 <span className="font-inter text-[11px] w-[200px] md:w-full md:text-sm font-[400]">
                   {task.id}. {task.title}
@@ -163,11 +157,11 @@ const TaskList: React.FC<TaskLists> = ({ listOfTasks }) => {
       )}
       <ConfirmationModal
         isOpen={openDeleteModal}
-        onConfirm={() => handleDeleteTask(taskToDelete!)}
-        onCancel={() => setTaskToDelete(null)}
+        onConfirm={handleDeleteTask}
+        onCancel={() => setOpenDeleteModal(false)}
         message={`Are you sure you want to delete Task ${taskToDelete}?`}
       />
-      {openEdit && (
+      {openEdit && taskToEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
           <div className="bg-[#1E1E1E] p-6 rounded-lg md:max-w-3xl w-[92%] md:mx-4">
             <CreateTaskForm
@@ -176,13 +170,10 @@ const TaskList: React.FC<TaskLists> = ({ listOfTasks }) => {
               mutatedTask={taskToEdit}
               onBack={() => setOpenEdit(false)}
               buttonType={'edit'}
-              setTaskText={(title) => {
-                setTaskToEdit({ ...taskToEdit, title });
-              }}
-              //selectedColor={taskToEdit.color}
-              setSelectedColor={(color) => {
-                setTaskToEdit({ ...taskToEdit, color });
-              }}
+              setTaskText={(title) => setTaskToEdit({ ...taskToEdit, title })}
+              setSelectedColor={(color) =>
+                setTaskToEdit({ ...taskToEdit, color })
+              }
             />
           </div>
         </div>

@@ -7,6 +7,8 @@ import { CreateTaskForm } from '@/components/Form/TaskForm';
 import { addTask, fetchTasks } from '@/services/taskService';
 import { Task } from '@/types/TaskList';
 import { LoadingSpinner } from '@/components/Loader/Loader';
+import { handleError } from '@/utils/errorHandler';
+import { showErrorToast } from '@/utils/toast';
 
 export default function Home() {
   const [view, setView] = useState<'home' | 'create'>('home');
@@ -22,7 +24,8 @@ export default function Home() {
         const data = await fetchTasks();
         setTasks(data);
       } catch (error) {
-        setError('Failed to fetch tasks. Please try again later.');
+        const errorMessage = handleError(error);
+        showErrorToast(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -36,12 +39,12 @@ export default function Home() {
       await addTask(task);
       const data = await fetchTasks();
       setTasks(data);
-      //setTasks([...tasks, newTask]);
       setTitle('');
       setColor('');
       setView('home');
     } catch (error) {
-      setError('Failed to add task. Please try again.');
+      const errorMessage = handleError(error);
+      showErrorToast(errorMessage);
     }
   };
 

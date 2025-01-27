@@ -1,12 +1,10 @@
 import { Task } from '@/types/TaskList';
 import axios from 'axios';
 
-
-const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const fetchTasks = async () => {
-    try {
-   
+  try {
     const response = await axios.get(`${BASE_API_URL}/getTasks`);
     return response.data;
   } catch (error) {
