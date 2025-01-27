@@ -1,0 +1,8 @@
+# Ignore artifacts:
+build
+.next
+node_modules
+
+# Ignore env files
+.env
+.env.local
