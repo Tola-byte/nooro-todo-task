@@ -3,7 +3,7 @@
 ## Overview
 This guide provides step-by-step instructions to set up the To-Do app, which consists of:
 - A **frontend** built with Next.js.
-- A **backend** using Express.js with Prisma ORM connected to a MySQL database.
+<!-- - A **backend** using Express.js with Prisma ORM connected to a MySQL database. -->
 
 Follow the steps below to get your app running locally.
 
@@ -31,12 +31,12 @@ Ensure you have the following installed:
    ```
 
 3. **Set up environment variables:**
-   Create a `.env.local` file in the root directory of the project and add the following variables:
+   Create a `.env` file in the root directory of the project and add the following variables:
    ```env
-   NEXT_PUBLIC_API_URL=http://localhost:3001/api
+   NEXT_PUBLIC_API_URL=http://localhost:8000/
    ```
-
-   Replace `http://localhost:3001/api` with the backend server URL if it's hosted elsewhere.
+<!-- 
+   Replace `http://localhost:3001/api` with the backend server URL if it's hosted elsewhere. -->
 
 4. **Start the development server:**
    ```bash
